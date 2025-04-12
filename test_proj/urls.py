@@ -21,6 +21,6 @@ from first_app.views import django_greetings, user_greetings
 
 urlpatterns = [
     path('admin/', admin.site.urls),
-    path('greetings/', django_greetings), #name="greetings"
-    path('greetings-f-str/', user_greetings),
+    path('greetings/', django_greetings),
+    path('user_greetings/<str:name>', user_greetings),
 ]
