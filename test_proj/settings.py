@@ -48,6 +48,7 @@ INSTALLED_APPS = [
 
     # local
     'first_app.apps.FirstAppConfig',
+    'task_manager.apps.TaskManagerConfig'
 ]
 
 MIDDLEWARE = [
@@ -83,16 +84,7 @@ WSGI_APPLICATION = 'test_proj.wsgi.application'
 # Database
 # https://docs.djangoproject.com/en/5.2/ref/settings/#databases
 
-sql_db = env.bool('USE_REMOTE_DB')
-
-if sql_db:
-    DATABASES = {
-        'default': {
-            'ENGINE': 'django.db.backends.sqlite3',
-            'NAME': BASE_DIR / 'db.sqlite3',
-        }
-    }
-else:
+if env.bool('USE_REMOTE_DB'):
     DATABASES = {
         'default': {
             'ENGINE': 'django.db.backends.mysql',
@@ -101,6 +93,13 @@ else:
             'PASSWORD': env('DB_PASSWORD'),
             'HOST': env('DB_HOST'),
             'PORT': env('DB_PORT'),
+        }
+    }
+else:
+    DATABASES = {
+        'default': {
+            'ENGINE': 'django.db.backends.sqlite3',
+            'NAME': BASE_DIR / 'db.sqlite3',
         }
     }
 
