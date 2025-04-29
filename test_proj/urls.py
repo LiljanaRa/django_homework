@@ -17,10 +17,11 @@ Including another URLconf
 from django.contrib import admin
 from django.urls import path
 
-from first_app.views import django_greetings, user_greetings
-
+from task_manager.views import create_task, list_of_tasks, get_task_detail, task_statistics
 urlpatterns = [
     path('admin/', admin.site.urls),
-    path('greetings/', django_greetings),
-    path('user_greetings/<str:name>', user_greetings),
+    path('task/create/', create_task),
+    path('tasks/', list_of_tasks),
+    path('tasks/<int:task_id>/', get_task_detail),
+    path('tasks/statistics/', task_statistics),
 ]
