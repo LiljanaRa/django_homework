@@ -1,9 +1,15 @@
 from rest_framework.decorators import api_view
 from rest_framework.request import Request
 from rest_framework.response import Response
+from rest_framework.views import APIView
+from rest_framework import status
 
-from task_manager.models import Task
-from task_manager.serializers import TaskCreateSerializer, TaskListSerializer, TaskDetailSerializer
+from task_manager.models import Task, SubTask
+from task_manager.serializers import (
+    TaskCreateSerializer,
+    TaskListSerializer,
+    TaskDetailSerializer,
+    SubTaskListSerializer)
 import datetime
 
 @api_view(['POST'])
@@ -80,3 +86,87 @@ def task_statistics(request):
         },
         status=200
     )
+
+
+class SubTaskListCreateAPIView(APIView):
+
+    def get(self, request: Request):
+        subtask = SubTask.objects.all()
+        serializer = SubTaskListSerializer(subtask, many=True)
+
+        return Response(serializer.data)
+
+    def post(self, request: Request):
+        serializer = SubTaskListSerializer(data=request.data)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
+
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+
+class SubTaskDetailUpdateDeleteAPIView(APIView):
+
+    def get(self, request: Request, **kwargs):
+        try:
+            subtask = SubTask.objects.get(id=kwargs['subtask_id'])
+        except SubTask.DoesNotExist:
+            return Response(
+                data={
+                    "message": "Subtask not found"
+                },
+                status=status.HTTP_404_NOT_FOUND
+            )
+        serializer = SubTaskListSerializer(subtask)
+
+        return Response(
+            data=serializer.data,
+            status=status.HTTP_200_OK
+        )
+
+    def put(self, request: Request, **kwargs):
+        try:
+            subtask = SubTask.objects.get(id=kwargs['subtask_id'])
+        except SubTask.DoesNotExist:
+            return Response(
+                data={
+                    "message": "Subtask not found"
+                },
+                status=status.HTTP_404_NOT_FOUND
+            )
+
+        serializer = SubTaskListSerializer(instance=subtask, data=request.data)
+
+        if serializer.is_valid():
+            serializer.save()
+
+            return Response(
+                data=serializer.data,
+                status=status.HTTP_200_OK
+            )
+        else:
+            return Response(
+                data=serializer.errors,
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
+    def delete(self, request: Request, **kwargs):
+        try:
+            subtask = SubTask.objects.get(id=kwargs['subtask_id'])
+        except SubTask.DoesNotExist:
+            return Response(
+                data={
+                    "massage": "Subtask not found"
+                },
+                status=status.HTTP_404_NOT_FOUND
+            )
+        subtask.delete()
+
+        return Response(
+            data={
+                "message": "Subtask was deleted successfully."
+            },
+            status=status.HTTP_204_NO_CONTENT
+        )
+
+
