@@ -149,27 +149,40 @@ def task_statistics(request):
 class SubTaskListCreateAPIView(APIView, PageNumberPagination):
     page_size = 5
 
-    def get(self, request: Request):
-        sort_by = request.query_params.get('sort_by', 'created_at')
-        sort_order = request.query_params.get('order', 'desc')
+    def get_queryset(self, request: Request):
+        queryset = SubTask.objects.all()
 
-        subtasks = SubTask.objects.all()
+        task_title = request.query_params.get('title')
+        status = request.query_params.get('status')
 
-        page_size = self.get_page_size(request)
-        self.page_size = page_size
-        result = self.paginate_queryset(queryset=subtasks, request=request, view=self)
+        if task_title:
+            queryset = queryset.filter(task__title__icontains=task_title)
+            print(queryset.query)
 
-        subtasks=subtasks.order_by(sort_by)
+        if status:
+            queryset = queryset.filter(status=status)
+
+        queryset = queryset.order_by('-created_at')
+
+        return queryset
+
+    def get_page_size(self, request: Request):
+        page_size = request.query_params.get('page_size')
+
+        if page_size and page_size.isdigit():
+            return int(page_size)
+
+        return self.page_size
+
+    def get(self,request: Request):
+        queryset = self.get_queryset(request=request)
+        self.page_size = self.get_page_size(request)
+
+        result = self.paginate_queryset(queryset=queryset, request=request, view=self)
 
         serializer = SubTaskListSerializer(result, many=True)
 
         return self.get_paginated_response(serializer.data)
-
-    def get_page_size(self, request):
-        page_size = request.query_params.get('page_size')
-        if page_size and page_size.isdigit():
-            return int(page_size)
-        return self.page_size
 
     def post(self, request: Request):
         serializer = SubTaskListSerializer(data=request.data)
@@ -178,6 +191,11 @@ class SubTaskListCreateAPIView(APIView, PageNumberPagination):
             return Response(serializer.data, status=status.HTTP_201_CREATED)
 
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+
+# sort_by = request.query_params.get('sort_by', 'created_at')
+#         sort_order = request.query_params.get('order', 'desc')
+
 
 
 class SubTaskDetailUpdateDeleteAPIView(APIView):
