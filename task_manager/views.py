@@ -15,8 +15,7 @@ from task_manager.serializers import (
 import datetime
 
 
-class TaskListCreateAPIView(APIView, PageNumberPagination):
-    page_size = 2
+class TaskListCreateAPIView(APIView):
 
     def get_queryset(self, request: Request):
         WEEKDAY_NAMES = {
@@ -147,13 +146,30 @@ def task_statistics(request):
     )
 
 
-class SubTaskListCreateAPIView(APIView):
+class SubTaskListCreateAPIView(APIView, PageNumberPagination):
+    page_size = 5
 
     def get(self, request: Request):
-        subtask = SubTask.objects.all()
-        serializer = SubTaskListSerializer(subtask, many=True)
+        sort_by = request.query_params.get('sort_by', 'created_at')
+        sort_order = request.query_params.get('order', 'desc')
 
-        return Response(serializer.data)
+        subtasks = SubTask.objects.all()
+
+        page_size = self.get_page_size(request)
+        self.page_size = page_size
+        result = self.paginate_queryset(queryset=subtasks, request=request, view=self)
+
+        subtasks=subtasks.order_by(sort_by)
+
+        serializer = SubTaskListSerializer(result, many=True)
+
+        return self.get_paginated_response(serializer.data)
+
+    def get_page_size(self, request):
+        page_size = request.query_params.get('page_size')
+        if page_size and page_size.isdigit():
+            return int(page_size)
+        return self.page_size
 
     def post(self, request: Request):
         serializer = SubTaskListSerializer(data=request.data)
