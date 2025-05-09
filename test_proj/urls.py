@@ -18,9 +18,8 @@ from django.contrib import admin
 from django.urls import path
 
 from task_manager.views import (
-    create_task,
-    list_of_tasks,
-    get_task_detail,
+    TaskListCreateAPIView,
+    TaskDetailUpdateDeleteAPIView,
     task_statistics,
     SubTaskListCreateAPIView,
     SubTaskDetailUpdateDeleteAPIView
@@ -29,9 +28,8 @@ from task_manager.views import (
 
 urlpatterns = [
     path('admin/', admin.site.urls),
-    path('task/create/', create_task),
-    path('tasks/', list_of_tasks),
-    path('tasks/<int:task_id>/', get_task_detail),
+    path('tasks/', TaskListCreateAPIView.as_view()),
+    path('tasks/<int:task_id>/', TaskDetailUpdateDeleteAPIView.as_view()),
     path('tasks/statistics/', task_statistics),
     path('subtasks/', SubTaskListCreateAPIView.as_view()),
     path('subtasks/<int:subtask_id>/', SubTaskDetailUpdateDeleteAPIView.as_view())

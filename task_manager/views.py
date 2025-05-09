@@ -1,4 +1,6 @@
+from django.db.models.functions import ExtractWeekDay
 from rest_framework.decorators import api_view
+from rest_framework.pagination import PageNumberPagination
 from rest_framework.request import Request
 from rest_framework.response import Response
 from rest_framework.views import APIView
@@ -12,55 +14,112 @@ from task_manager.serializers import (
     SubTaskListSerializer)
 import datetime
 
-@api_view(['POST'])
-def create_task(request: Request):
-    data = request.data
 
-    serializer = TaskCreateSerializer(data=data)
+class TaskListCreateAPIView(APIView, PageNumberPagination):
+    page_size = 2
 
-    if serializer.is_valid():
-        serializer.save()
+    def get_queryset(self, request: Request):
+        WEEKDAY_NAMES = {
+            'monday': 1,
+            'tuesday': 2,
+            'wednesday': 3,
+            'thursday': 4,
+            'friday': 5,
+            'saturday': 6,
+            'sunday': 7
+        }
+
+        queryset = Task.objects.all()
+
+        weekdays = request.query_params.get('weekday')
+
+        if weekdays:
+            weekday = weekdays.lower()
+            weekday_num = WEEKDAY_NAMES.get(weekday)
+            queryset = queryset.annotate(
+            weekday=ExtractWeekDay('deadline')
+        ).filter(weekday=weekday_num)
+
+        return queryset
+
+    def get(self, request: Request):
+        tasks = self.get_queryset(request=request)
+        serializer = TaskListSerializer(tasks, many=True)
+
+        return Response(serializer.data)
+
+    def post(self, request: Request):
+        serializer = TaskCreateSerializer(data=request.data)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
+
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+
+class TaskDetailUpdateDeleteAPIView(APIView):
+
+    def get(self, request: Request, **kwargs):
+        try:
+            task = Task.objects.get(id=kwargs['task_id'])
+        except Task.DoesNotExist:
+            return Response(
+                data={
+                    "message": "Task not found"
+                },
+                status=status.HTTP_404_NOT_FOUND
+            )
+        serializer = TaskListSerializer(task)
+
         return Response(
-            data=serializer,
-            status=201
-        )
-    else:
-        return Response(
-            data=serializer.errors,
-            status=400
+            data=serializer.data,
+            status=status.HTTP_200_OK
         )
 
+    def put(self, request: Request, **kwargs):
+        try:
+            task = Task.objects.get(id=kwargs['task_id'])
+        except Task.DoesNotExist:
+            return Response(
+                data={
+                    "message": "Task not found"
+                },
+                status=status.HTTP_404_NOT_FOUND
+            )
 
-@api_view(['GET'])
-def list_of_tasks(request):
-    tasks = Task.objects.all()
+        serializer = TaskListSerializer(instance=task, data=request.data)
 
-    serializer = TaskListSerializer(tasks, many=True)
+        if serializer.is_valid():
+            serializer.save()
 
-    return Response(
-        data=serializer.data,
-        status=200
-    )
+            return Response(
+                data=serializer.data,
+                status=status.HTTP_200_OK
+            )
+        else:
+            return Response(
+                data=serializer.errors,
+                status=status.HTTP_400_BAD_REQUEST
+            )
 
+    def delete(self, request: Request, **kwargs):
+        try:
+            task = Task.objects.get(id=kwargs['task_id'])
+        except Task.DoesNotExist:
+            return Response(
+                data={
+                    "massage": "Task not found"
+                },
+                status=status.HTTP_404_NOT_FOUND
+            )
+        task.delete()
 
-@api_view(['GET'])
-def get_task_detail(request, task_id: int):
-    try:
-        task = Task.objects.get(id=task_id)
-    except Task.DoesNotExist:
         return Response(
             data={
-                "message": "Task not found"
+                "message": "Task was deleted successfully."
             },
-            status=404
+            status=status.HTTP_204_NO_CONTENT
         )
-
-    serializer = TaskDetailSerializer(task)
-
-    return Response(
-        data=serializer.data,
-        status=200
-    )
 
 
 @api_view(['GET'])
