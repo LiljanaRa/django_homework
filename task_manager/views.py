@@ -19,13 +19,13 @@ class TaskListCreateAPIView(APIView):
 
     def get_queryset(self, request: Request):
         WEEKDAY_NAMES = {
-            'monday': 1,
-            'tuesday': 2,
-            'wednesday': 3,
-            'thursday': 4,
-            'friday': 5,
-            'saturday': 6,
-            'sunday': 7
+            'sunday': 1,
+            'monday': 2,
+            'tuesday': 3,
+            'wednesday': 4,
+            'thursday': 5,
+            'friday': 6,
+            'saturday': 7
         }
 
         queryset = Task.objects.all()
@@ -157,7 +157,6 @@ class SubTaskListCreateAPIView(APIView, PageNumberPagination):
 
         if task_title:
             queryset = queryset.filter(task__title__icontains=task_title)
-            print(queryset.query)
 
         if status:
             queryset = queryset.filter(status=status)
@@ -176,10 +175,7 @@ class SubTaskListCreateAPIView(APIView, PageNumberPagination):
 
     def get(self,request: Request):
         queryset = self.get_queryset(request=request)
-        self.page_size = self.get_page_size(request)
-
         result = self.paginate_queryset(queryset=queryset, request=request, view=self)
-
         serializer = SubTaskListSerializer(result, many=True)
 
         return self.get_paginated_response(serializer.data)
@@ -191,11 +187,6 @@ class SubTaskListCreateAPIView(APIView, PageNumberPagination):
             return Response(serializer.data, status=status.HTTP_201_CREATED)
 
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-
-
-# sort_by = request.query_params.get('sort_by', 'created_at')
-#         sort_order = request.query_params.get('order', 'desc')
-
 
 
 class SubTaskDetailUpdateDeleteAPIView(APIView):
