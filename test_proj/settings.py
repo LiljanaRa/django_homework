@@ -46,6 +46,7 @@ INSTALLED_APPS = [
 
     # 3-rd party
     'rest_framework',
+    'django_filters',
 
     # local
     'task_manager.apps.TaskManagerConfig'

@@ -30,11 +30,13 @@ class TaskListSerializer(serializers.ModelSerializer):
             'title',
             'status',
             'deadline',
+            'created_at'
         ]
 
 
 class SubTaskListSerializer(serializers.ModelSerializer):
     created_at = serializers.DateTimeField(read_only=True)
+    task = serializers.StringRelatedField()
 
     class Meta:
         model = SubTask
