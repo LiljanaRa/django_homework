@@ -1,3 +1,6 @@
+from urllib.request import Request
+
+from django.db.models import Count
 from django.db.models.functions import ExtractWeekDay
 from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework.decorators import api_view
@@ -7,14 +10,17 @@ from rest_framework.generics import (
     ListCreateAPIView,
     RetrieveUpdateDestroyAPIView
     )
-from rest_framework import filters
+from rest_framework import filters, status
+from rest_framework.viewsets import ModelViewSet
+from rest_framework.decorators import action
 
-from task_manager.models import Task, SubTask
+from task_manager.models import Task, SubTask, Category
 from task_manager.serializers import (
     TaskCreateSerializer,
     TaskListSerializer,
     SubTaskListSerializer,
-    SubTaskCreateSerializer)
+    SubTaskCreateSerializer,
+    CategoryCreateSerializer)
 import datetime
 
 
@@ -118,6 +124,37 @@ class SubTaskDetailUpdateDeleteView(RetrieveUpdateDestroyAPIView):
         if self.request.method == 'GET':
             return SubTaskListSerializer
         return SubTaskCreateSerializer
+
+
+class CategoryViewSet(ModelViewSet):
+    queryset = Category.objects.all()
+    serializer_class = CategoryCreateSerializer
+
+    @action(
+        detail=False,
+        methods=['get',],
+        url_path='statistic'
+    )
+
+    def count_tasks(self, request: Request):
+        category_statistic = Category.objects.annotate(
+            tasks_count=Count('category')
+        )
+
+        data = [
+            {
+                "id": cat.id,
+                "name": cat.name,
+                "tasks_count": cat.tasks_count
+            }
+            for cat in category_statistic
+        ]
+
+        return Response(
+            data=data,
+            status=status.HTTP_200_OK
+        )
+
 
 
 @api_view(['GET'])
