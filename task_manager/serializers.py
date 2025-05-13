@@ -2,7 +2,6 @@ from rest_framework import serializers
 from rest_framework.exceptions import ValidationError
 from django.utils import timezone
 
-
 from task_manager.models import Task, SubTask,Category
 
 
@@ -27,6 +26,7 @@ class TaskListSerializer(serializers.ModelSerializer):
     class Meta:
         model = Task
         fields = [
+            'id',
             'title',
             'status',
             'deadline',
@@ -63,7 +63,7 @@ class CategoryCreateSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Category
-        fields = ['name']
+        fields = ['id', 'name']
 
     def create(self, validated_data):
         name = validated_data.get('name')

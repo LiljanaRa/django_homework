@@ -1,6 +1,5 @@
 from django.db import models
 from django.utils import timezone
-#import datetime
 from django.db.models import UniqueConstraint
 
 from task_manager.managers import SoftDeleteManager
