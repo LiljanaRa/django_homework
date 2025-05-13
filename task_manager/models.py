@@ -1,9 +1,23 @@
 from django.db import models
+from django.utils import timezone
+#import datetime
 from django.db.models import UniqueConstraint
+
+from task_manager.managers import SoftDeleteManager
 
 
 class Category(models.Model):
     name = models.CharField(max_length=50)
+    is_deleted = models.BooleanField(default=False)
+    deleted_at = models.DateTimeField(null=True, blank=True)
+
+    objects = SoftDeleteManager()
+
+    def delete(self, *args, **kwargs):
+        self.is_deleted = True
+        self.deleted_at = timezone.now()
+
+        self.save()
 
     class Meta:
         db_table = 'task_manager_category'
