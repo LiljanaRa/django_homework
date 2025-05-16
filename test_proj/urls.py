@@ -17,6 +17,7 @@ Including another URLconf
 from django.contrib import admin
 from django.urls import path
 from rest_framework.routers import DefaultRouter
+from rest_framework_simplejwt.views import TokenObtainPairView, TokenRefreshView
 
 from task_manager.views import (
     TaskListCreateView,
@@ -38,5 +39,7 @@ urlpatterns = [
     path('tasks/<int:pk>/', TaskDetailUpdateDeleteView.as_view()),
     path('tasks/statistics/', task_statistics),
     path('subtasks/', SubTaskListCreateView.as_view()),
-    path('subtasks/<int:subtask_id>/', SubTaskDetailUpdateDeleteView.as_view())
+    path('subtasks/<int:pk>/', SubTaskDetailUpdateDeleteView.as_view()),
+    path('auth-login-jwt/', TokenObtainPairView.as_view()),
+    path('token-refresh/', TokenRefreshView.as_view()),
 ] + router.urls

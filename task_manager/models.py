@@ -9,6 +9,7 @@ class Category(models.Model):
     name = models.CharField(max_length=50)
     is_deleted = models.BooleanField(default=False)
     deleted_at = models.DateTimeField(null=True, blank=True)
+    created_at = models.DateTimeField(auto_now_add=True, null=True, blank=True)
 
     objects = SoftDeleteManager()
 

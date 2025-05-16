@@ -2,7 +2,6 @@ from django.db.models import Count
 from django.db.models.functions import ExtractWeekDay
 from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework.decorators import api_view
-from rest_framework.pagination import CursorPagination
 from rest_framework.response import Response
 from rest_framework.request import Request
 from rest_framework.generics import (
@@ -12,7 +11,7 @@ from rest_framework.generics import (
 from rest_framework import filters, status
 from rest_framework.viewsets import ModelViewSet
 from rest_framework.decorators import action
-from rest_framework.permissions import SAFE_METHODS
+from rest_framework.permissions import SAFE_METHODS, IsAuthenticated, IsAdminUser
 
 from task_manager.models import Task, SubTask, Category
 from task_manager.serializers import (
@@ -64,6 +63,11 @@ class TaskListCreateView(ListCreateAPIView):
             return TaskListSerializer
         return TaskCreateSerializer
 
+    def get_permissions(self):
+        if self.request.method in SAFE_METHODS:
+            return [IsAuthenticated()]
+        return [IsAdminUser()]
+
 
 class TaskDetailUpdateDeleteView(RetrieveUpdateDestroyAPIView):
 
@@ -75,6 +79,11 @@ class TaskDetailUpdateDeleteView(RetrieveUpdateDestroyAPIView):
         if self.request.method in SAFE_METHODS:
             return TaskListSerializer
         return TaskCreateSerializer
+
+    def get_permissions(self):
+        if self.request.method in SAFE_METHODS:
+            return [IsAuthenticated()]
+        return [IsAdminUser()]
 
 
 class SubTaskListCreateView(ListCreateAPIView):
@@ -107,6 +116,11 @@ class SubTaskListCreateView(ListCreateAPIView):
             return SubTaskListSerializer
         return SubTaskCreateSerializer
 
+    def get_permissions(self):
+        if self.request.method in SAFE_METHODS:
+            return [IsAuthenticated()]
+        return [IsAdminUser()]
+
 
 class SubTaskDetailUpdateDeleteView(RetrieveUpdateDestroyAPIView):
 
@@ -119,16 +133,15 @@ class SubTaskDetailUpdateDeleteView(RetrieveUpdateDestroyAPIView):
             return SubTaskListSerializer
         return SubTaskCreateSerializer
 
-
-class CategoryPagination(CursorPagination):
-    page_size = 6
-    ordering = 'name'
+    def get_permissions(self):
+        if self.request.method in SAFE_METHODS:
+            return [IsAuthenticated()]
+        return [IsAdminUser()]
 
 
 class CategoryViewSet(ModelViewSet):
     queryset = Category.objects.all()
     serializer_class = CategoryCreateSerializer
-    pagination_class = CategoryPagination
 
     @action(
         detail=False,
@@ -155,6 +168,10 @@ class CategoryViewSet(ModelViewSet):
             status=status.HTTP_200_OK
         )
 
+    def get_permissions(self):
+        if self.request.method in SAFE_METHODS:
+            return [IsAuthenticated()]
+        return [IsAdminUser()]
 
 
 @api_view(['GET'])
