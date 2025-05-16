@@ -1,11 +1,10 @@
-from urllib.request import Request
-
 from django.db.models import Count
 from django.db.models.functions import ExtractWeekDay
 from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework.decorators import api_view
 from rest_framework.pagination import CursorPagination
 from rest_framework.response import Response
+from rest_framework.request import Request
 from rest_framework.generics import (
     ListCreateAPIView,
     RetrieveUpdateDestroyAPIView

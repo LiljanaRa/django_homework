@@ -11,8 +11,8 @@ https://docs.djangoproject.com/en/5.2/ref/settings/
 """
 
 from pathlib import Path
-
 from environ import Env
+import logging
 
 
 env = Env()
@@ -49,7 +49,7 @@ INSTALLED_APPS = [
     'django_filters',
 
     # local
-    'task_manager.apps.TaskManagerConfig'
+    'task_manager.apps.TaskManagerConfig',
 ]
 
 MIDDLEWARE = [
@@ -127,6 +127,66 @@ AUTH_PASSWORD_VALIDATORS = [
 
 REST_FRAMEWORK = {
     'DEFAULT_PAGINATION_CLASS': 'task_manager.paginators.CustomCursorPagination'
+}
+
+
+LOGGING = {
+    'version': 1,
+    'disable_existing_loggers': False,
+    'formatters': {
+        'verbose': {
+            'format': '[{asctime}] {levelname} {name}:{lineno} | {message}',
+            'style': '{',
+            'datefmt': '%Y-%m-%d %H:%M:%S',
+        }
+    },
+    'handlers': {
+        'console': {
+            'class': 'logging.StreamHandler',
+            'level': 'DEBUG' if DEBUG else 'INFO',
+            'formatter': 'verbose'
+        },
+        'http_file': {
+            'class': 'logging.handlers.RotatingFileHandler',
+            'level': 'DEBUG' if DEBUG else 'INFO',
+            'formatter': 'verbose',
+            'filename': str(BASE_DIR / 'logs/http_logs.log'),
+            'maxBytes': 10_000_000,
+            'backupCount': 5,
+            'encoding': 'utf-8'
+        },
+        'db_file': {
+            'class': 'logging.handlers.RotatingFileHandler',
+            'level': 'DEBUG' if DEBUG else 'INFO',
+            'formatter': 'verbose',
+            'filename': str(BASE_DIR / 'logs/db_logs.log'),
+            'maxBytes': 10_000_000,
+            'backupCount': 5,
+            'encoding': 'utf-8'
+        },
+    },
+    'loggers': {
+        'django': {
+            'handlers': ['console'],
+            'level': 'DEBUG' if DEBUG else 'INFO',
+            'propagate': False,
+        }
+    },
+        'django.server': {
+            'handlers': ['console'],
+            'level': 'DEBUG' if DEBUG else 'INFO',
+            'propagate': False,
+        },
+        'django.request': {
+            'handlers': ['http_file'],
+            'level': 'DEBUG' if DEBUG else 'INFO',
+            'propagate': False,
+    },
+        'django.db.backends': {
+            'handlers': ['db_file'],
+            'level': 'DEBUG' if DEBUG else 'INFO',
+            'propagate': False,
+        }
 }
 
 
