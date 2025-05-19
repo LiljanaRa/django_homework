@@ -12,7 +12,11 @@ from rest_framework.generics import (
 from rest_framework import filters, status
 from rest_framework.viewsets import ModelViewSet
 from rest_framework.decorators import action
-from rest_framework.permissions import SAFE_METHODS, IsAuthenticated, IsAdminUser
+from rest_framework.permissions import (
+    SAFE_METHODS,
+    IsAuthenticated,
+    IsAdminUser)
+import datetime
 
 from task_manager.models import Task, SubTask, Category
 from task_manager.serializers import (
@@ -21,7 +25,9 @@ from task_manager.serializers import (
     SubTaskListSerializer,
     SubTaskCreateSerializer,
     CategoryCreateSerializer)
-import datetime
+from task_manager.permissions import (
+    IsTaskOwnerOrReadOnly,
+    IsSubtaskOwnerOrReadOnly)
 
 
 class TaskListCreateView(ListCreateAPIView):
@@ -74,6 +80,7 @@ class TaskListCreateView(ListCreateAPIView):
 
 
 class TaskDetailUpdateDeleteView(RetrieveUpdateDestroyAPIView):
+    permission_classes = [IsTaskOwnerOrReadOnly]
 
     def get_queryset(self):
         queryset = Task.objects.all()
@@ -83,11 +90,6 @@ class TaskDetailUpdateDeleteView(RetrieveUpdateDestroyAPIView):
         if self.request.method in SAFE_METHODS:
             return TaskListSerializer
         return TaskCreateSerializer
-
-    def get_permissions(self):
-        if self.request.method in SAFE_METHODS:
-            return [IsAuthenticated()]
-        return [IsAdminUser()]
 
 
 class UserTasksListGenericView(ListAPIView):
@@ -140,6 +142,7 @@ class SubTaskListCreateView(ListCreateAPIView):
 
 
 class SubTaskDetailUpdateDeleteView(RetrieveUpdateDestroyAPIView):
+    permission_classes = [IsSubtaskOwnerOrReadOnly]
 
     def get_queryset(self):
         queryset = SubTask.objects.all()
@@ -149,11 +152,6 @@ class SubTaskDetailUpdateDeleteView(RetrieveUpdateDestroyAPIView):
         if self.request.method in SAFE_METHODS:
             return SubTaskListSerializer
         return SubTaskCreateSerializer
-
-    def get_permissions(self):
-        if self.request.method in SAFE_METHODS:
-            return [IsAuthenticated()]
-        return [IsAdminUser()]
 
 
 class CategoryViewSet(ModelViewSet):
