@@ -1,5 +1,6 @@
 from django.db import models
 from django.utils import timezone
+from django.conf import settings
 from django.db.models import UniqueConstraint
 
 from task_manager.managers import SoftDeleteManager
@@ -10,6 +11,12 @@ class Category(models.Model):
     is_deleted = models.BooleanField(default=False)
     deleted_at = models.DateTimeField(null=True, blank=True)
     created_at = models.DateTimeField(auto_now_add=True, null=True, blank=True)
+    owner = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True
+    )
 
     objects = SoftDeleteManager()
 
@@ -47,6 +54,12 @@ class Task(models.Model):
     status = models.CharField(max_length=25, choices=STATUS_CHOICES)
     deadline = models.DateTimeField()
     created_at = models.DateTimeField(auto_now_add=True)
+    owner = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True
+    )
 
     class Meta:
         db_table = 'task_manager_task'
@@ -77,6 +90,12 @@ class SubTask(models.Model):
     status = models.CharField(max_length=25, choices=STATUS_CHOICES)
     deadline = models.DateTimeField()
     created_at = models.DateTimeField(auto_now_add=True)
+    owner = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True
+    )
 
     class Meta:
         db_table = 'task_manager_subtask'

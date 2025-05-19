@@ -28,7 +28,8 @@ from task_manager.views import (
     task_statistics,
     SubTaskListCreateView,
     SubTaskDetailUpdateDeleteView,
-    CategoryViewSet
+    CategoryViewSet,
+    UserTasksListGenericView
     )
 
 
@@ -52,6 +53,7 @@ router.register(r'categories', CategoryViewSet)
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('tasks/', TaskListCreateView.as_view()),
+    path('tasks-user/', UserTasksListGenericView.as_view()),
     path('tasks/<int:pk>/', TaskDetailUpdateDeleteView.as_view()),
     path('tasks/statistics/', task_statistics),
     path('subtasks/', SubTaskListCreateView.as_view()),

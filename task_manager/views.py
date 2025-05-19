@@ -5,6 +5,7 @@ from rest_framework.decorators import api_view
 from rest_framework.response import Response
 from rest_framework.request import Request
 from rest_framework.generics import (
+    ListAPIView,
     ListCreateAPIView,
     RetrieveUpdateDestroyAPIView
     )
@@ -68,6 +69,9 @@ class TaskListCreateView(ListCreateAPIView):
             return [IsAuthenticated()]
         return [IsAdminUser()]
 
+    def perform_create(self, serializer):
+        serializer.save(owner=self.request.user)
+
 
 class TaskDetailUpdateDeleteView(RetrieveUpdateDestroyAPIView):
 
@@ -84,6 +88,16 @@ class TaskDetailUpdateDeleteView(RetrieveUpdateDestroyAPIView):
         if self.request.method in SAFE_METHODS:
             return [IsAuthenticated()]
         return [IsAdminUser()]
+
+
+class UserTasksListGenericView(ListAPIView):
+    serializer_class = TaskListSerializer
+    permission_classes = [IsAuthenticated]
+
+    def get_queryset(self):
+        return Task.objects.filter(
+            owner=self.request.user
+        )
 
 
 class SubTaskListCreateView(ListCreateAPIView):
@@ -120,6 +134,9 @@ class SubTaskListCreateView(ListCreateAPIView):
         if self.request.method in SAFE_METHODS:
             return [IsAuthenticated()]
         return [IsAdminUser()]
+
+    def perform_create(self, serializer):
+        serializer.save(owner=self.request.user)
 
 
 class SubTaskDetailUpdateDeleteView(RetrieveUpdateDestroyAPIView):
@@ -172,6 +189,9 @@ class CategoryViewSet(ModelViewSet):
         if self.request.method in SAFE_METHODS:
             return [IsAuthenticated()]
         return [IsAdminUser()]
+
+    def perform_create(self, serializer):
+        serializer.save(owner=self.request.user)
 
 
 @api_view(['GET'])
